@@ -240,6 +240,7 @@
     renderDynamic();
     bindDynamic();
     if (!first) $$(".reveal").forEach((el) => el.classList.add("in"));
+    if (!first) dispatchEvent(new Event("resize")); // hero stage swaps sides with direction
   }
 
   /* ---------------------------------------------------------
@@ -270,7 +271,7 @@
     const ctx = canvas.getContext("2d");
     const PALETTE = ["#ff2d75", "#ffb800", "#2bd96b", "#00b8ff", "#9b4dff", "#ff2d75"];
     const SPRITES = 40;
-    let portrait = false, W = 0, H = 0, DPR = 1, A = 0, cx = 0, cy = 0, parts = [], sprites = [];
+    let W = 0, H = 0, DPR = 1, A = 0, cx = 0, cy = 0, parts = [], sprites = [];
     let running = true, pull = 0.004, explodeAt = null, time = 0;
     const mouse = { x: -9999, y: -9999, active: false };
 
@@ -312,9 +313,11 @@
       W = canvas.clientWidth; H = canvas.clientHeight;
       canvas.width = W * DPR; canvas.height = H * DPR;
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      portrait = H > W * 1.1;
-      A = portrait ? Math.min(H * 0.26, W * 0.8) : Math.min(W * 0.3, H * 0.62);
-      cx = W / 2; cy = H / 2;
+      // Keep the infinity inside its own stage so it never covers the headline
+      const st = $("#heroStage").getBoundingClientRect(), cr = canvas.getBoundingClientRect();
+      cx = st.left - cr.left + st.width / 2;
+      cy = st.top - cr.top + st.height / 2;
+      A = Math.min(st.width * 0.44, st.height * 1.15);
       const target = Math.round(Math.max(600, Math.min(2000, (W * H) / 800)));
       if (parts.length === 0) {
         for (let i = 0; i < target; i++) parts.push(make());
@@ -341,13 +344,14 @@
       pull += (0.055 - pull) * 0.012;
 
       // trails
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = "rgba(5,6,11,0.22)";
+      // fade to transparent (not to bg colour) so 8-bit rounding leaves no ghosts
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = "rgba(0,0,0,0.24)";
       ctx.fillRect(0, 0, W, H);
       ctx.globalCompositeOperation = "lighter";
 
-      const rot = (portrait ? Math.PI / 2 : 0) + Math.sin(time * 0.15) * 0.08 + scrollF * 0.6;
-      const scl = 1 + scrollF * 0.6;
+      const rot = Math.sin(time * 0.15) * 0.08 + scrollF * 0.6;
+      const scl = 1 + scrollF * 0.3;
       const cr = Math.cos(rot), sr = Math.sin(rot);
       const breathe = 1 + Math.sin(time * 0.8) * 0.03;
       const mR = Math.min(W, H) * 0.16, mR2 = mR * mR;
@@ -396,8 +400,8 @@
 
     buildSprites();
     resize();
-    ctx.fillStyle = "#05060b"; ctx.fillRect(0, 0, W, H);
     addEventListener("resize", resize);
+    new ResizeObserver(resize).observe($("#heroStage"));
 
     const hero = $("#hero");
     hero.addEventListener("pointermove", (e) => {
