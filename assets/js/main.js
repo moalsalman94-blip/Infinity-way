@@ -313,9 +313,9 @@
       canvas.width = W * DPR; canvas.height = H * DPR;
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       portrait = H > W * 1.1;
-      A = portrait ? Math.min(H * 0.4, W * 1.2) : Math.min(W * 0.46, H * 1.05);
+      A = portrait ? Math.min(H * 0.26, W * 0.8) : Math.min(W * 0.3, H * 0.62);
       cx = W / 2; cy = H / 2;
-      const target = Math.round(Math.max(700, Math.min(2600, (W * H) / 650)));
+      const target = Math.round(Math.max(600, Math.min(2000, (W * H) / 800)));
       if (parts.length === 0) {
         for (let i = 0; i < target; i++) parts.push(make());
       } else if (parts.length < target) {
@@ -327,9 +327,9 @@
       return {
         t: tt,
         spd: (0.0018 + Math.random() * 0.0035) * (Math.random() < 0.85 ? 1 : -1),
-        off: gauss() * (0.05 + Math.random() * 0.06),
+        off: gauss() * (0.04 + Math.random() * 0.045),
         ph: Math.random() * Math.PI * 2,
-        sz: 2 + Math.random() * Math.random() * 9,
+        sz: 1.5 + Math.random() * Math.random() * 6,
         x: Math.random() * W, y: Math.random() * H, vx: 0, vy: 0,
       };
     }
